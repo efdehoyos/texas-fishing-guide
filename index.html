@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Texas Fishing Field Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:wght@400;600&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 18px; }
+    body { background: #f7f3ed; font-family: 'Source Serif 4', Georgia, serif; color: #2c2316; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f0ebe2; }
+    ::-webkit-scrollbar-thumb { background: #c9bfb0; border-radius: 3px; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+const C = {
+  bg:"#f7f3ed",bgCard:"#ffffff",bgAlt:"#f0ebe2",border:"#ddd5c8",borderMed:"#c9bfb0",
+  text:"#2c2316",textMid:"#5a4e40",textSoft:"#8a7b6a",
+  accent:"#b05e0d",accentBg:"#fef3e2",accentBd:"#f5c97a",
+  green:"#2a7a3b",greenBg:"#eaf4ec",greenBd:"#a3d4ac",
+  blue:"#1a5e8a",blueBg:"#e6f2fb",blueBd:"#90c4e4",
+  red:"#b5230a",redBg:"#fceae7",redBd:"#f0a898",
+  purple:"#6b3fa0",purpleBg:"#f3eefb",purpleBd:"#c9aeed",
+  teal:"#0d6e72",tealBg:"#e4f4f5",tealBd:"#80cdd0",
+  orange:"#c46200",orangeBg:"#fff3e0",orangeBd:"#ffcc80",
+};
+const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const diffBg={Beginner:C.greenBg,Intermediate:C.orangeBg,Advanced:C.redBg};
+const diffColor={Beginner:C.green,Intermediate:C.orange,Advanced:C.red};
+const fishData={
+  freshwater:[
+    {name:"Largemouth Bass",icon:"🐟",season:"Year-round (peak: Spring)",bestMonths:[3,4,5],limit:"5/day",minSize:'14"',topLakes:["Lake Fork","Lake Conroe","Sam Rayburn"],tip:"Spawn in shallow coves March-May. Texas-rigged soft plastics along grass edges.",difficulty:"Beginner",record:"18.18 lbs - Lake Fork"},
+    {name:"Striped Bass",icon:"🐠",season:"Fall & Winter",bestMonths:[10,11,12,1],limit:"5/day",minSize:'18"',topLakes:["Lake Texoma","Lake Whitney","Possum Kingdom"],tip:"Follow shad schools on open water. Trolling umbrella rigs at varying depths.",difficulty:"Intermediate",record:"53 lbs - Lake Texoma"},
+    {name:"Blue Catfish",icon:"🐡",season:"Year-round (peak: Summer)",bestMonths:[6,7,8],limit:"25/day",minSize:"None",topLakes:["Lake Tawakoni","Lewisville Lake","Choke Canyon"],tip:"Deep holes with cut shad or skipjack. Night fishing in summer produces giants.",difficulty:"Beginner",record:"121.5 lbs - Lake Texoma"},
+    {name:"Crappie",icon:"🐟",season:"Spring & Fall",bestMonths:[2,3,4,10,11],limit:"25/day",minSize:"None",topLakes:["Lake Fork","Toledo Bend","Caddo Lake"],tip:"Target brush piles and submerged timber. Small jigs and live minnows under a float.",difficulty:"Beginner",record:"3.92 lbs - Private lake"},
+    {name:"Flathead Catfish",icon:"🐡",season:"Summer",bestMonths:[5,6,7,8],limit:"10/day",minSize:"None",topLakes:["Colorado River","Brazos River","Red River"],tip:"Live bream or perch near log jams and undercut banks after dark.",difficulty:"Advanced",record:"98.5 lbs - Lake Palestine"},
+  ],
+  saltwater:[
+    {name:"Speckled Trout",icon:"🐠",season:"Year-round (peak: Fall)",bestMonths:[9,10,11],limit:"5/day",minSize:'15"',topLakes:["Laguna Madre","Matagorda Bay","Galveston Bay"],tip:"Work shallow grass flats at dawn. Top-water in low light, soft plastics mid-day.",difficulty:"Beginner",record:"13.11 lbs - Gulf waters"},
+    {name:"Red Drum (Redfish)",icon:"🐟",season:"Year-round (peak: Fall)",bestMonths:[9,10,11],limit:"3/day",minSize:'20-28 inch slot',topLakes:["Port Aransas","Sabine Lake","Copano Bay"],tip:"Tailing reds on shallow flats - sight-fish with a gold spoon or weedless soft plastic.",difficulty:"Intermediate",record:"59.5 lbs - Gulf of Mexico"},
+    {name:"Flounder",icon:"🐡",season:"Fall migration (Sept-Nov)",bestMonths:[9,10,11],limit:"5/day",minSize:'12"',topLakes:["Galveston Jetties","Aransas Pass","Port Mansfield"],tip:"Flounder gigging at night along shallow flats is a Texas tradition. Live mud minnows work great.",difficulty:"Beginner",record:"13.0 lbs - Gulf waters"},
+    {name:"King Mackerel",icon:"🐠",season:"Summer",bestMonths:[5,6,7,8],limit:"3/day",minSize:'27"',topLakes:["Port Aransas Offshore","South Padre Is.","Galveston Offshore"],tip:"Slow-troll live bait near oil platforms and artificial reefs in 60-100 ft of water.",difficulty:"Advanced",record:"81 lbs - Gulf of Mexico"},
+    {name:"Snook",icon:"🐟",season:"Summer",bestMonths:[6,7,8],limit:"1/day",minSize:'28"',topLakes:["South Padre Island","Lower Laguna Madre","Port Mansfield"],tip:"Texas snook - South Texas only. Target jetties and pass edges at night.",difficulty:"Advanced",record:"57.5 lbs - Gulf Coast"},
+  ],
+  regions:[
+    {name:"East Texas Piney Woods",color:C.green,lakes:["Toledo Bend","Sam Rayburn","Caddo Lake"],species:["Largemouth Bass","Crappie","Catfish"],highlight:"Toledo Bend - 185,000 acres straddling the Louisiana border. Trophy freshwater fishing year-round.",license:"Texas Freshwater"},
+    {name:"North Texas / DFW Corridor",color:C.blue,lakes:["Lake Texoma","Lake Fork","Lewisville Lake"],species:["Striped Bass","Largemouth Bass","Crappie"],highlight:"Lake Fork holds 50+ Texas ShareLunker entries - the undisputed bass capital of the state.",license:"Texas Freshwater"},
+    {name:"Gulf Coast - Upper",color:C.teal,lakes:["Galveston Bay","Matagorda Bay","Sabine Lake"],species:["Speckled Trout","Redfish","Flounder"],highlight:"Galveston Bay - one of the most productive estuaries on the Gulf Coast with year-round inshore action.",license:"Texas Saltwater"},
+    {name:"Coastal Bend",color:C.blue,lakes:["Aransas Bay","Copano Bay","Port Aransas"],species:["Redfish","Trout","Drum"],highlight:"The Coastal Bend offers legendary wade fishing on Redfish Bay's pristine seagrass flats.",license:"Texas Saltwater"},
+    {name:"South Texas / Lower Laguna",color:C.teal,lakes:["Lower Laguna Madre","Port Mansfield","South Padre"],species:["Snook","Tarpon","Redfish"],highlight:"Clearest water in Texas - sight-casting to tailing redfish and exotic snook in subtropical flats.",license:"Texas Saltwater"},
+  ],
+  spotlight:[
+    {name:"Canyon Lake",icon:"⛰️",type:"Freshwater",distance:"~50 mi",species:["Largemouth Bass","Guadalupe Bass","Catfish","Crappie"],seasons:"Bass: Spring & Fall - Catfish: Summer nights",tip:"Guadalupe River below the dam holds Guadalupe bass and winter-stocked rainbow trout. Rocky ledges and current seams - small spinners or soft plastics.",license:"Freshwater",highlight:"~50 miles from SA - Hill Country scenery, clear water, multiple species."},
+    {name:"Choke Canyon Reservoir",icon:"🏜️",type:"Freshwater",distance:"~70 mi",species:["Largemouth Bass","Blue Catfish","Flathead Catfish","White Bass"],seasons:"Catfish: Summer (peak) - Bass: Spring spawn",tip:"One of the best catfish lakes in South Texas. Deeper creek channels with cut shad. Bass spawn in flooded timber near Calliham Unit.",license:"Freshwater",highlight:"Massive blue cats only 70 miles south - check current levels before going."},
+    {name:"Medina Lake",icon:"🌊",type:"Freshwater",distance:"~30 mi",species:["Largemouth Bass","Catfish","Crappie","Sunfish"],seasons:"Bass: Spring - Crappie: Spring & Fall",tip:"Closest quality freshwater lake to SA. When levels are up, work brush and coves near the dam.",license:"Freshwater",highlight:"Your closest lake - just 30 miles west. Verify levels before going."},
+    {name:"Lower Laguna Madre",icon:"🦅",type:"Saltwater",distance:"~3.5 hrs",species:["Redfish","Speckled Trout","Snook","Black Drum"],seasons:"Redfish & Trout: Year-round - Snook: Summer",tip:"Crown jewel of Texas wade fishing. Clear shallow flats for sight-casting to tailing redfish. Gold spoons and natural soft plastics.",license:"Saltwater",highlight:"World-class sight fishing 3.5 hrs from San Antonio."},
+    {name:"Corpus Christi / Aransas Bay",icon:"⚓",type:"Saltwater",distance:"~2.5 hrs",species:["Speckled Trout","Redfish","Flounder","Drum"],seasons:"Trout & Reds: Fall peak - Flounder: Sept-Nov",tip:"Closest Gulf Coast bay to SA. Rockport wade access and guide services. Fall flounder run at Aransas Pass jetties is legendary.",license:"Saltwater",highlight:"Your nearest saltwater fishery - only 2.5 hours away."},
+  ],
+};
+const AI_SYSTEM_PROMPT=`You are "Tex," a veteran Texas fishing guide with 35+ years across ALL Texas waters - freshwater lakes, Hill Country rivers, Gulf Coast bays, and offshore Gulf. You are based in San Antonio.
+
+LIVE CONDITIONS - MANDATORY BEFORE RECOMMENDING ANY LOCATION:
+Always web-search for: current lake level, current barometric pressure + trend, local weather forecast, recent fishing reports. If a lake is critically low or dry, say so plainly and redirect. Always cite what you found.
+
+FISH COLOR VISION: Red disappears at ~15 ft, Orange at ~25 ft, Yellow at ~35 ft, Green at ~50 ft, Blue/Violet 75-100+ ft, UV/White/Silver visible at all depths. Bass: trichromatic, chartreuse and UV. Redfish: dichromatic, gold/white best. Trout: natural shad in clear, chartreuse murky. Catfish: color-blind, scent rules. Crappie: chartreuse, white, pink, UV. Clear water=natural. Murky=high-contrast. Deep=blue/purple/UV. Low light=dark silhouette.
+
+THERMOCLINE: Forms Texas lakes late May/June, sits 15-25 ft deep in summer. Fish cannot survive below it. Bass suspend just above it (10-20 ft). Winter: warmest water at 10-20 ft - go mid-depth. Find it on sonar where fish stop appearing.
+
+BAROMETRIC PRESSURE (search current reading and trend): Rapidly falling = BEST bite 2-6 hrs before front. Slowly falling = good fishing. Low stable after storm = wait 24-48 hrs. Rising slowly = improving. High stable = methodical, tight to cover. Rapidly rising = tough bite.
+
+LURE RETRIEVAL SPEED: Below 55F=dead slow. 55-65F=slow-medium stop-and-go. 65-75F=medium steady. 75-85F=medium-fast. Above 85F=slow-deep midday, fast topwater only first/last light. Bass=twitch-pause. Redfish=slow steady gold spoon. Trout=steady medium with pauses. Crappie=very slow drop. Catfish=stationary.
+
+SHORELINE STRUCTURE: Points=fish at tip first. Coves=earlier spring spawn. Laydowns=cast parallel shaded side. Riprap=spring heat and crayfish. Grass edges=fish the seam not inside. Docks=shade equals fish. Creek mouths=best after rain. Saddles between points=overlooked travel lane. Wind-blown bank=always fish windward.
+
+RIVER CURRENT: Eddies=cast upstream let drift in. Seams=best spot in moving water. Riffles=Guadalupe bass feed here. Deep holes below riffles=big fish rest. Undercut banks=cast tight let current sweep under. Boulders=eddy behind every one. Outside bends=deepest biggest fish.
+
+ANGLER CLOTHING: Fish see through Snell's Window (~97 degree cone overhead). Avoid white, bright blue, neon yellow, neon orange, UV-reflective synthetics. Wear olive drab, tan/khaki, camo, earth tones, medium gray. Slow movement more important than color. Never shadow the water. Clear flats fish spook from 60+ feet.
+
+PRO TIPS: First/last 30 min of light = best windows. After cold front fish lethargic 24-48 hrs go deep slow down 50%. Moon phases matter for coastal tidal feeding. Polarized glasses matter more than lure choice on clear water. Live bait beats artificial at temp extremes. Retie knots every morning.
+
+FISHING KNOTS: Palomar=95%+ braid/fluorocarbon. Improved Clinch=85-90% monofilament. Uni Knot=90% all types. Non-Slip Loop=90% jigs/lures free action. Alberto=braid to fluorocarbon leader.
+
+SAN ANTONIO HOME WATERS: Canyon Lake (~50 mi), Choke Canyon (~70 mi), Medina Lake (~30 mi), Corpus Christi/Aransas Bay (~2.5 hrs), Lower Laguna Madre (~3.5 hrs). ALWAYS verify current lake levels before recommending SA-area freshwater - drought conditions common.`;
+
+const scienceSections=[
+  {id:"colorVision",icon:"🎨",title:"Fish Color Vision Science",accent:C.purple,accentBg:C.purpleBg,accentBd:C.purpleBd,
+    intro:"Most game fish see color very differently than humans - color perception changes drastically with depth. Choosing the right lure color is science, not guesswork.",
+    colorDepth:[
+      {color:"Red",hex:"#e74c3c",depth:"~15 ft",note:"Appears dark gray/black below this depth."},
+      {color:"Orange",hex:"#e67e22",depth:"~25 ft",note:"Fades to brown/dark gray."},
+      {color:"Yellow",hex:"#d4ac0d",depth:"~35 ft",note:"Goes pale and dull."},
+      {color:"Green",hex:"#27ae60",depth:"~50 ft",note:"Fades to gray-green."},
+      {color:"Blue",hex:"#2471a3",depth:"~75 ft",note:"Blue-gray tint, still visible."},
+      {color:"Violet/UV",hex:"#7d3c98",depth:"100+ ft",note:"Penetrates deepest of all visible spectrum."},
+      {color:"White/Silver",hex:"#9e9e9e",depth:"All depths",note:"High contrast at any depth - always visible."},
+    ],
+    species:[
+      {name:"Largemouth Bass",detail:"Trichromatic. Sees red well in shallow water (<15 ft). Responds strongly to chartreuse and UV. In turbid water, dark/black silhouettes dominate."},
+      {name:"Redfish",detail:"Dichromatic. Poor red/orange discrimination. Gold spoons, white, and dark silhouettes most effective. Red lure looks gray at 20 ft depth."},
+      {name:"Speckled Trout",detail:"Dichromatic + strong motion/vibration detection. Natural shad colors in clear water; chartreuse in murky bays."},
+      {name:"Catfish",detail:"Functionally color-blind. Rely on smell, lateral line, and electroreception. Scented cut bait always beats any color choice."},
+      {name:"Crappie",detail:"Good color detection in shallow water. Chartreuse, white, pink, and UV jigs are consistently top producers."},
+    ],
+    rule:"Clear water = natural/subtle. Murky = high-contrast (chartreuse, black, white). Deep = blue/purple/UV. Low light = dark silhouette or chartreuse."
+  },
+  {id:"thermocline",icon:"🌡️",title:"Thermocline & Water Stratification",accent:C.red,accentBg:C.redBg,accentBd:C.redBd,
+    intro:"A thermocline is the invisible boundary between warm oxygenated surface water and cold oxygen-depleted deep water. In Texas summers it controls where every fish in the lake is located.",
+    items:[
+      {label:"What It Is",note:"A layer of rapid temperature change. Below it, oxygen levels drop too low for fish to survive long-term. Fish are physically excluded from below-thermocline water."},
+      {label:"When It Forms in Texas",note:"Late May through June. Surface water heats faster than it mixes with cold deep water, creating a hard thermal boundary."},
+      {label:"Typical Texas Summer Depth",note:"15-25 ft deep. Varies by lake clarity, size, and sustained air temperature."},
+      {label:"Where Fish Are in Summer",note:"ABOVE the thermocline. Bass suspend just above it (10-20 ft). Blue catfish cruise the boundary edge. Nothing lives long below it."},
+      {label:"Fall Breakdown (Oct-Nov)",note:"Surface cools and matches deep water - thermocline dissolves. Fish redistribute through the entire column. Fall turnover means fish are everywhere."},
+      {label:"Winter Inverse Thermocline",note:"Warmest water sits at 10-20 ft in winter (not the surface). Fish seek this warmth. Go mid-depth in winter - counterintuitive but critical."},
+      {label:"How to Find It on Sonar",note:"Look for a fuzzy horizontal band where fish stop appearing on your screen. A temperature probe confirms it instantly."},
+    ],
+    rule:"Summer shortcut: if typical spots are empty, the thermocline has pushed fish up - work 12-20 ft horizontally. Moving water (rivers) does not stratify, so the Guadalupe is thermocline-free year-round."
+  },
+  {id:"baro",icon:"🌬️",title:"Barometric Pressure & Fish Behavior",accent:C.blue,accentBg:C.blueBg,accentBd:C.blueBd,
+    intro:"Fish have a swim bladder - a gas-filled organ that acts like a built-in barometer. Atmospheric pressure changes directly affect where fish position and how aggressively they feed.",
+    items:[
+      {label:"Rapidly Falling - Storm Approaching",note:"BEST BITE of all. Fish feed aggressively 2-6 hours before a front arrives. Drop everything and go fishing now.",dot:"#2a7a3b"},
+      {label:"Slowly Falling",note:"Good active fishing. Fish near surface and structure edges. Topwaters and faster retrieves work well.",dot:C.orange},
+      {label:"Low & Stable - After Storm",note:"Slow fishing. Fish are lethargic and deep. Wait 24-48 hours before heading out.",dot:C.red},
+      {label:"Slowly Rising - Storm Clearing",note:"Fishing improves as pressure stabilizes. Mid-depth structural fishing resumes over 12-24 hours.",dot:C.orange},
+      {label:"High & Stable",note:"Predictable methodical fishing. Fish hold tight to cover. Slow presentations and bottom structure work.",dot:C.blue},
+      {label:"Rapidly Rising",note:"Fish go deep - tough bite. Similar to post-storm low pressure.",dot:C.red},
+    ],
+    rule:"Key rule: The RATE of change matters more than the absolute number. Ask Tex - he searches for current barometric pressure and its trend before every fishing recommendation."
+  },
+  {id:"lureSpeed",icon:"💨",title:"Lure Retrieval Speed Guide",accent:C.orange,accentBg:C.orangeBg,accentBd:C.orangeBd,
+    intro:"Water temperature governs fish metabolism - which controls how fast a fish can and wants to chase a lure. Retrieval speed is one of the most overlooked variables in fishing.",
+    temps:[
+      {range:"Below 55F",label:"Dead Slow",note:"Fish metabolism critically low. Barely move the bait. Dead-sticking and slow-drag only. Texas winter and cold-front conditions."},
+      {range:"55-65F",label:"Slow-Medium",note:"Stop-and-go retrieves trigger reaction strikes from lethargic fish. Let the bait pause on the bottom."},
+      {range:"65-75F",label:"Medium Steady",note:"Most consistent all-around temperatures. Standard presentations produce. Fish are active and predictable."},
+      {range:"75-85F",label:"Medium-Fast",note:"Fish are aggressive. Faster retrieves effective especially at dawn and dusk. Topwaters shine."},
+      {range:"Above 85F",label:"Split Strategy",note:"Slow and deep at midday. Fast topwater ONLY at first/last light. Do not work surface lures in Texas midday summer heat."},
+    ],
+    species:[
+      {name:"Bass",note:"Erratic twitch-pause retrieve often outperforms steady - mimics injured prey and triggers reaction strikes."},
+      {name:"Redfish",note:"Slow-medium steady gold spoon on shallow flats. Reel just fast enough to keep the spoon off the bottom."},
+      {name:"Speckled Trout",note:"Steady medium with occasional pauses. Trout often strike on the pause following a twitch."},
+      {name:"Crappie",note:"Very slow vertical drop and slow horizontal swim. Barely faster than the jig settling on its own weight."},
+      {name:"Catfish",note:"Stationary or extremely slow bottom drag. Let the scent do all the work - no retrieve needed."},
+    ]
+  },
+  {id:"knots",icon:"🪢",title:"Essential Fishing Knots",accent:C.accent,accentBg:C.accentBg,accentBd:C.accentBd,
+    intro:"A failed knot is the most preventable way to lose a big fish. Master these four. Always wet the line before cinching - dry friction weakens mono and fluorocarbon by up to 30%.",
+  },
+  {id:"shoreline",icon:"🏖️",title:"Reading Shoreline & Structure Features",accent:C.green,accentBg:C.greenBg,accentBd:C.greenBd,
+    intro:"The shoreline and underwater structure are your map to where fish hold. Learn to read these features and spend less time guessing and more time catching.",
+    items:[
+      {label:"Points (land jutting into water)",note:"Fish stack at the tip, especially downwind. Baitfish travel the edge. Always fish points first - most reliable structure on any lake."},
+      {label:"Coves & Pockets",note:"Warmer in spring - earlier spawn. Protected from wind. Bass nest in the back. Excellent crappie habitat year-round."},
+      {label:"Laydowns (fallen trees in water)",note:"Prime ambush cover. Fish the shaded side. Cast parallel to the trunk - not perpendicular. Work the full length slowly."},
+      {label:"Riprap / Rock Banks",note:"Holds heat in early spring - fish these before open banks warm up. Crayfish live here year-round. Great for crankbaits."},
+      {label:"Grass & Vegetation Edges",note:"Highest oxygen production in the lake. Fish the SEAM between grass and open water - not inside. Predators ambush from the edge."},
+      {label:"Boat Docks",note:"Year-round shade. Critical in Texas summer. Skip jigs underneath. Shadow equals fish. Productive midday when fish seek shade."},
+      {label:"Creek Mouths / Inflows",note:"Oxygen-rich baitfish highways. Best after rain. Fish funnel here in summer heat seeking cooler fresher water."},
+      {label:"Saddles Between Two Points",note:"Underwater ridge connecting two points - a fish travel lane most anglers ignore. Often one of the most productive spots on any lake."},
+      {label:"Wind-Blown Bank",note:"Wind pushes baitfish and oxygenates water. Always fish the windward bank on windy days - this single rule consistently produces."},
+    ],
+    rule:"Transition zones are the key concept: wherever two habitats meet (rock-to-mud, grass-to-sand, shallow-to-deep), fish position right on the edge."
+  },
+  {id:"current",icon:"🌊",title:"River Current & Current Breaks",accent:C.blue,accentBg:C.blueBg,accentBd:C.blueBd,
+    intro:"In moving water fish conserve energy by positioning in current breaks and ambushing prey that drifts past. Learn to read these features and you will always know where to cast first.",
+    items:[
+      {label:"Eddies (calm pocket behind obstacles)",note:"Fish hold here and dart into current to ambush prey. Cast upstream of the eddy and let the bait drift naturally into the calm pocket."},
+      {label:"Seams (fast meets slow water)",note:"The single best spot in any moving water. Predators sit in slow water and strike into the fast lane. Fish the exact change-of-speed line."},
+      {label:"Riffles (shallow rocky fast)",note:"Highly oxygenated. Guadalupe bass and trout actively feed here. Small spinners, nymphs, and small streamers work well."},
+      {label:"Deep Holes Below Riffles",note:"Where big fish rest between feeding bursts. Bottom presentations with live or cut bait. Slow down significantly."},
+      {label:"Undercut Banks",note:"Shade and protection. Large fish hide here. Cast tight to the bank and let current sweep bait naturally underneath."},
+      {label:"Boulders / Large Rocks",note:"An eddy forms directly behind every boulder. Cast just upstream and let the lure swing behind the rock - fish are waiting there."},
+      {label:"Inside River Bends",note:"Slower water, gravel bars deposit here. Fish feed actively on inside bends at low light, especially dawn."},
+      {label:"Outside River Bends",note:"Deep, fast, undercut banks - where the biggest fish in the river live. Hard to present a bait naturally, but worth the effort."},
+    ],
+    rule:"The Guadalupe River below Canyon Dam is a textbook for every one of these features in a short stretch of water - one of the best river-fishing classrooms in Texas."
+  },
+  {id:"clothing",icon:"👕",title:"Angler Clothing & Fish Visibility",accent:C.red,accentBg:C.redBg,accentBd:C.redBd,
+    intro:"Fish can see you from 60+ feet away on clear flats. They detect anglers through silhouette contrast against the sky, UV reflection, sudden movement, and water vibration.",
+    items:[
+      {label:"Snell's Window - How Fish See You",note:"Fish have a ~97 degree cone of clear upward vision overhead. Inside it they see the sky clearly - and any angler standing against it."},
+      {label:"Worst Colors to Wear",note:"White (extreme sky contrast), bright blue, bright yellow, neon orange, and UV-reflective synthetic fabrics. These stand out against the sky like a beacon."},
+      {label:"Best Colors to Wear",note:"Olive drab, tan/khaki, camouflage, dark earth tones, medium gray. These blend with vegetation and the sky horizon - think of how a great blue heron is colored."},
+      {label:"Movement Is More Detectable Than Color",note:"Sudden movement is MORE detectable than clothing color. Slow your approach just as much as you consider your shirt. Crouch as you near the water's edge."},
+      {label:"Never Shadow the Fishing Area",note:"Keep the sun behind you so your shadow falls away from the water. A shadow sweeping across the surface will spook fish instantly."},
+      {label:"Wade Fishing Approach",note:"Dark-colored waders reduce silhouette. Slow deliberate steps minimize the underwater pressure waves that telegraph your position before you are visible."},
+    ],
+    rule:"Clear flats tip (Laguna Madre, Canyon Lake): redfish and bass will spook from 60+ feet if you approach carelessly. Dull colors + slow movement + low profile = dramatically more fish."
+  },
+  {id:"proTips",icon:"⚡",title:"Pro Tips from the Field",accent:C.accent,accentBg:C.accentBg,accentBd:C.accentBd,
+    intro:"Hard-earned wisdom that changes outcomes on the water. These apply across species, seasons, and Texas conditions.",
+    items:[
+      {label:"The Golden Window",note:"First and last 30 minutes of daylight are the two most productive windows of any day. Be rigged and on the water before sunrise - not arriving at the ramp."},
+      {label:"Cold Front Recovery",note:"After a front passes fish are lethargic for 24-48 hours. Target deepest available structure. Slow everything down 50%. Skip the day immediately after a cold front."},
+      {label:"Moon Phases for Coastal Fishing",note:"Full and new moon = stronger tidal movement = more active coastal feeding. Plan Gulf Coast trips around moon phases for dramatically better results."},
+      {label:"Pre-Storm Feeding Frenzy",note:"A rapidly dropping barometer is the best fishing forecast possible. Fish sense the pressure drop and feed hard before the storm arrives. Go immediately."},
+      {label:"Match the Hatch",note:"Observe the dominant baitfish present - shad, mullet, mud minnows, perch - and match your lure's size, profile, and action to it."},
+      {label:"Polarized Glasses Are Mandatory",note:"On clear Texas waters polarized sunglasses matter more than any lure selection. You cannot effectively fish water you cannot see into."},
+      {label:"Visible Fish Are Not Your Target",note:"The fish you can see have already seen you. Look beyond them. Bigger undisturbed fish are holding just outside your visible range."},
+      {label:"Wind Is Your Friend",note:"A light ripple hides your approach and concentrates baitfish on the windward bank. Calm glassy water makes fish spooky. Fishable wind is an advantage."},
+      {label:"Retie Every Morning",note:"Mono and fluorocarbon weaken from UV and repeated stress. Retie all terminal connections each morning. Losing a trophy to an old knot is preventable."},
+      {label:"Live Bait in Extremes",note:"When water is very cold (<55F) or very hot (>85F) live bait almost always outperforms artificial. Fish metabolism cannot chase - give them something effortless."},
+      {label:"Midday Texas Summer Strategy",note:"Bass trout and redfish retreat to depth or heavy shade at midday in summer. Go 15-20 ft deep or fish heavy structure. Come back at 6 PM for topwater."},
+      {label:"After Rain = Creek Mouths",note:"Fresh rain flushes baitfish and oxygen into creek arms and inflows. Fish these immediately after a rain event - one of the most reliable patterns in Texas."},
+    ]
+  },
+  {id:"regs",icon:"📋",title:"Regulations & Licensing",accent:C.blue,accentBg:C.blueBg,accentBd:C.blueBd,
+    items:[
+      {label:"Freshwater License",note:"Required for all anglers 17+ on Texas freshwater. Available at tpwd.texas.gov or Walmart/Bass Pro."},
+      {label:"Saltwater License",note:"Separate stamp required for coastal/bay fishing. Combo package (fresh + salt) is the best value."},
+      {label:"License Year",note:"Annual license runs September 1 - August 31 each year."},
+      {label:"Military Exemption",note:"Active duty military residents are exempt from Texas fishing license fees. Bring your military ID."},
+      {label:"Redfish Slot Limit",note:"20-28 inch keeper slot. Only ONE fish over 28 inches per day. Know this before you keep a red."},
+      {label:"ShareLunker Bass",note:"Bass 13 lbs+ must be reported to TPWD. You receive gear rewards and contribute to trophy bass research."},
+      {label:"Invasive Species Rule",note:"Clean, drain, and dry all boats and gear. Zebra mussels and giant salvinia are destroying Texas waters."},
+    ]
+  },
+  {id:"resources",icon:"📱",title:"Essential Resources",accent:C.green,accentBg:C.greenBg,accentBd:C.greenBd,
+    items:[
+      {label:"TPWD License Portal",note:"tpwd.texas.gov/licenses"},
+      {label:"TX Lake Levels (USGS)",note:"waterdata.usgs.gov/tx"},
+      {label:"LCRA Highland Lakes",note:"lcra.org - critical for SA-area lakes"},
+      {label:"TPWD Stocking Reports",note:"tpwd.texas.gov/fishboat - updated weekly by county"},
+      {label:"Texas Fishing Forum",note:"texasfishingforum.com - real-time local reports"},
+      {label:"ShareLunker Program",note:"sharelunker.com - track trophy bass history"},
+      {label:"Barometric Pressure (Live)",note:"weather.gov or Windy app - check trend before every trip"},
+    ]
+  },
+];
+function KnotDiagrams(){
+  const [openKnot,setOpenKnot]=useState(null);
+  const lc="#b05e0d",hc="#555";
+  const knots=[
+    {name:"Palomar Knot",strength:"95%+ breaking strength",best:"Braided & fluorocarbon line",
+      steps:['Double 6" of line, pass the loop through the hook eye','Tie a loose overhand knot in the doubled line above the eye','Pass the entire hook through the large loop','Wet the line, pull both ends simultaneously to cinch tight'],
+      svg:<svg viewBox="0 0 280 110" style={{width:"100%",maxWidth:280}} xmlns="http://www.w3.org/2000/svg">
+        <text x="140" y="14" textAnchor="middle" fill={C.accent} fontSize="11" fontWeight="bold" fontFamily="sans-serif">PALOMAR KNOT</text>
+        <path d="M 18 54 L 118 54" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M 18 67 L 118 67" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M 52 54 Q 76 26 102 54" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M 113 54 Q 126 46 133 60 Q 126 72 113 67" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <circle cx="141" cy="60" r="6" stroke={hc} strokeWidth="2" fill="none"/>
+        <path d="M 147 60 L 168 60 Q 184 60 184 76 Q 184 92 168 92 L 153 92 Q 146 92 146 85" stroke={hc} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M 146 85 L 153 82" stroke={hc} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+        <text x="14" y="50" fill={C.textSoft} fontSize="9" fontFamily="sans-serif">Pull</text>
+        <text x="140" y="107" textAnchor="middle" fill={C.textSoft} fontSize="9" fontFamily="sans-serif">Wet before cinching - pull both ends evenly</text>
+      </svg>},
+    {name:"Improved Clinch Knot",strength:"~85-90% breaking strength",best:"Monofilament, everyday use",
+      steps:['Pass tag end through hook eye, leave 8" of tag','Wrap tag end 5-6 times around the standing line','Thread tag end back through the small loop near the eye','Thread tag end through the large open loop created','Wet and pull standing line to cinch snug against eye'],
+      svg:<svg viewBox="0 0 280 110" style={{width:"100%",maxWidth:280}} xmlns="http://www.w3.org/2000/svg">
+        <text x="140" y="14" textAnchor="middle" fill={C.accent} fontSize="11" fontWeight="bold" fontFamily="sans-serif">IMPROVED CLINCH KNOT</text>
+        <circle cx="222" cy="62" r="6" stroke={hc} strokeWidth="2" fill="none"/>
+        <path d="M 228 62 L 248 62 Q 264 62 264 78 Q 264 94 248 94 L 231 94 Q 224 94 224 87" stroke={hc} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M 20 62 L 130 62" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M 128 62 Q 136 44 144 62 Q 152 80 160 62 Q 168 44 176 62 Q 184 80 192 62 Q 200 44 208 62 Q 212 70 216 62" stroke={lc} strokeWidth="2" fill="none" strokeLinecap="round"/>
+        <text x="140" y="107" textAnchor="middle" fill={C.textSoft} fontSize="9" fontFamily="sans-serif">5-6 wraps - tag threads back through both loops</text>
+      </svg>},
+    {name:"Uni Knot",strength:"~90% breaking strength",best:"All line types, swivels, heavy line",
+      steps:['Thread tag through eye, double back 6" parallel to standing line','Form a loop over both parallel lines with the tag end','Make 6 turns wrapping through the loop around both lines','Pull tag end to slide wraps toward the hook eye','Wet and pull standing line to seat knot against the eye'],
+      svg:<svg viewBox="0 0 280 110" style={{width:"100%",maxWidth:280}} xmlns="http://www.w3.org/2000/svg">
+        <text x="140" y="14" textAnchor="middle" fill={C.accent} fontSize="11" fontWeight="bold" fontFamily="sans-serif">UNI KNOT</text>
+        <circle cx="227" cy="62" r="6" stroke={hc} strokeWidth="2" fill="none"/>
+        <path d="M 233 62 L 252 62 Q 267 62 267 78 Q 267 94 252 94 L 235 94 Q 228 94 228 87" stroke={hc} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M 20 62 L 160 62" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <ellipse cx="168" cy="62" rx="6" ry="13" stroke={lc} strokeWidth="1.8" fill="none"/>
+        <ellipse cx="180" cy="62" rx="6" ry="13" stroke={lc} strokeWidth="1.8" fill="none"/>
+        <ellipse cx="192" cy="62" rx="6" ry="13" stroke={lc} strokeWidth="1.8" fill="none"/>
+        <ellipse cx="204" cy="62" rx="6" ry="13" stroke={lc} strokeWidth="1.8" fill="none"/>
+        <ellipse cx="216" cy="62" rx="5" ry="12" stroke={lc} strokeWidth="1.8" fill="none"/>
+        <text x="140" y="107" textAnchor="middle" fill={C.textSoft} fontSize="9" fontFamily="sans-serif">6 wraps through loop - works with all line types</text>
+      </svg>},
+    {name:"Non-Slip Loop Knot",strength:"~90% breaking strength",best:"Jigs & lures - allows free action",
+      steps:['Tie a small overhand knot in the line 8-10" from the end','Thread tag end through the lure or jig eye','Bring tag end back through the overhand knot (same direction)','Wrap tag end 3 times around the standing line','Thread tag back through overhand knot - pull to form a fixed open loop'],
+      svg:<svg viewBox="0 0 280 110" style={{width:"100%",maxWidth:280}} xmlns="http://www.w3.org/2000/svg">
+        <text x="140" y="14" textAnchor="middle" fill={C.accent} fontSize="11" fontWeight="bold" fontFamily="sans-serif">NON-SLIP LOOP KNOT</text>
+        <path d="M 18 62 L 86 62" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M 86 62 Q 94 44 107 54 Q 116 62 106 70 Q 96 78 88 70 Q 84 62 92 54" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M 106 62 L 148 62" stroke={lc} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <ellipse cx="106" cy="62" rx="23" ry="17" stroke={lc} strokeWidth="1.3" fill="none" strokeDasharray="4 3" opacity="0.5"/>
+        <circle cx="154" cy="62" r="6" stroke={hc} strokeWidth="2" fill="none"/>
+        <path d="M 160 58 L 188 50 Q 208 46 210 62 Q 208 78 188 74 L 160 66" stroke={hc} strokeWidth="2" fill="none" strokeLinejoin="round"/>
+        <text x="106" y="93" textAnchor="middle" fill={C.accent} fontSize="9" fontFamily="sans-serif">open loop</text>
+        <text x="140" y="107" textAnchor="middle" fill={C.textSoft} fontSize="9" fontFamily="sans-serif">Fixed open loop lets lure swing freely for max action</text>
+      </svg>},
+  ];
+  return (
+    <div>
+      <p style={{fontSize:"0.9rem",color:C.textMid,lineHeight:1.7,margin:"0 0 14px"}}>Master these four knots until muscle memory. <strong style={{color:C.accent}}>Always wet the knot before cinching</strong> - dry friction weakens line up to 30%.</p>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {knots.map((k,i)=>(
+          <div key={k.name} style={{background:C.bgCard,border:`1px solid ${openKnot===i?C.accent:C.border}`,borderRadius:10,overflow:"hidden"}}>
+            <div onClick={()=>setOpenKnot(openKnot===i?null:i)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",cursor:"pointer",background:openKnot===i?C.accentBg:C.bgCard}}>
+              <div>
+                <div style={{fontSize:"0.95rem",fontWeight:700,color:C.text,fontFamily:"'Playfair Display',serif"}}>{k.name}</div>
+                <div style={{fontSize:"0.78rem",color:C.accent,marginTop:3}}>Best for: {k.best}</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:"0.72rem",color:C.textSoft,background:C.bgAlt,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 8px"}}>{k.strength}</span>
+                <span style={{color:C.textSoft,transform:openKnot===i?"rotate(180deg)":"none",transition:"transform 0.25s",display:"inline-block"}}>▾</span>
+              </div>
+            </div>
+            {openKnot===i&&(
+              <div style={{padding:"0 14px 14px",borderTop:`1px solid ${C.border}`}}>
+                <div style={{marginTop:14,display:"flex",justifyContent:"center",background:C.bgAlt,borderRadius:8,padding:"14px 8px",border:`1px solid ${C.border}`}}>{k.svg}</div>
+                <div style={{marginTop:12}}>
+                  <div style={{fontSize:"0.72rem",color:C.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>How to Tie</div>
+                  <ol style={{margin:0,padding:"0 0 0 20px",display:"flex",flexDirection:"column",gap:6}}>
+                    {k.steps.map((s,j)=><li key={j} style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>{s}</li>)}
+                  </ol>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div style={{marginTop:12,padding:"10px 12px",background:C.accentBg,border:`1px solid ${C.accentBd}`,borderRadius:8,fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>
+        <strong style={{color:C.accent}}>Also essential - Alberto Knot:</strong> Best for connecting braided main line to a fluorocarbon leader. 10 forward + 10 backward wraps. Critical for all saltwater leader setups.
+      </div>
+    </div>
+  );
+}
+
+function ScienceCard({s}){
+  const [open,setOpen]=useState(false);
+  return (
+    <div style={{background:open?s.accentBg:C.bgCard,border:`1.5px solid ${open?s.accent:C.border}`,borderLeft:`4px solid ${s.accent}`,borderRadius:12,marginBottom:10,overflow:"hidden",transition:"all 0.25s",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div onClick={()=>setOpen(!open)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 16px",cursor:"pointer"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:"1.4rem"}}>{s.icon}</span>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1rem",fontWeight:700,color:C.text}}>{s.title}</div>
+        </div>
+        <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s"}}>▾</span>
+      </div>
+      {open&&(
+        <div style={{padding:"0 16px 16px",borderTop:`1px solid ${C.border}`}}>
+          {s.intro&&<p style={{fontSize:"0.9rem",color:C.textMid,lineHeight:1.75,margin:"12px 0"}}>{s.intro}</p>}
+          {s.id==="knots"&&<KnotDiagrams/>}
+          {s.id==="colorVision"&&<>
+            <div style={{fontSize:"0.72rem",color:s.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>Color Depth Penetration</div>
+            <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:14}}>
+              {s.colorDepth.map(c=>(
+                <div key={c.color} style={{display:"flex",alignItems:"center",gap:10,background:C.bgAlt,borderRadius:8,padding:"8px 10px",border:`1px solid ${C.border}`}}>
+                  <div style={{width:20,height:20,borderRadius:4,background:c.hex,flexShrink:0,border:"1px solid rgba(0,0,0,0.15)"}}/>
+                  <div style={{flex:1}}>
+                    <span style={{fontSize:"0.85rem",color:C.text,fontWeight:600}}>{c.color}</span>
+                    <span style={{fontSize:"0.78rem",color:C.textSoft}}> - disappears at {c.depth}</span>
+                  </div>
+                  <div style={{fontSize:"0.78rem",color:C.textMid,textAlign:"right",maxWidth:160}}>{c.note}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{fontSize:"0.72rem",color:s.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>By Species</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              {s.species.map(sp=>(
+                <div key={sp.name} style={{background:C.bgAlt,borderRadius:8,padding:"8px 10px",border:`1px solid ${C.border}`}}>
+                  <div style={{fontSize:"0.85rem",color:s.accent,fontWeight:700,marginBottom:3}}>{sp.name}</div>
+                  <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>{sp.detail}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+          {s.id==="baro"&&<div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+            {s.items.map(item=>(
+              <div key={item.label} style={{display:"flex",alignItems:"flex-start",gap:10,background:C.bgAlt,borderRadius:8,padding:"8px 10px",border:`1px solid ${C.border}`}}>
+                <div style={{width:11,height:11,borderRadius:"50%",background:item.dot,flexShrink:0,marginTop:4}}/>
+                <div>
+                  <div style={{fontSize:"0.85rem",color:C.text,fontWeight:700,marginBottom:2}}>{item.label}</div>
+                  <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>{item.note}</div>
+                </div>
+              </div>
+            ))}
+          </div>}
+          {s.id==="lureSpeed"&&<>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+              {s.temps.map(t=>(
+                <div key={t.range} style={{background:C.bgAlt,borderRadius:8,padding:"8px 10px",border:`1px solid ${C.border}`}}>
+                  <div style={{display:"flex",gap:8,alignItems:"baseline",marginBottom:3}}>
+                    <span style={{fontSize:"0.82rem",color:s.accent,fontWeight:700}}>{t.range}</span>
+                    <span style={{fontSize:"0.72rem",color:C.textSoft,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:20,padding:"1px 7px"}}>{t.label}</span>
+                  </div>
+                  <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>{t.note}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{fontSize:"0.72rem",color:s.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>By Species</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              {s.species.map(sp=>(
+                <div key={sp.name} style={{background:C.bgAlt,borderRadius:8,padding:"8px 10px",border:`1px solid ${C.border}`}}>
+                  <div style={{fontSize:"0.85rem",color:s.accent,fontWeight:700,marginBottom:2}}>{sp.name}</div>
+                  <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>{sp.note}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+          {s.items&&!["colorVision","baro","lureSpeed","knots"].includes(s.id)&&(
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              {s.items.map(item=>(
+                <div key={item.label} style={{background:C.bgAlt,borderRadius:8,padding:"8px 10px",border:`1px solid ${C.border}`}}>
+                  <div style={{fontSize:"0.85rem",color:s.accent,fontWeight:700,marginBottom:2}}>{item.label}</div>
+                  <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.6}}>{item.note}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {s.rule&&<div style={{padding:"10px 12px",background:s.accentBg,border:`1.5px solid ${s.accentBd}`,borderRadius:8,fontSize:"0.85rem",color:C.text,lineHeight:1.7}}>
+            <strong style={{color:s.accent}}>Key Rule: </strong>{s.rule}
+          </div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MonthBar({bestMonths}){
+  return <div style={{display:"flex",gap:2,margin:"8px 0"}}>
+    {months.map((m,i)=><div key={m} title={m} style={{flex:1,height:9,borderRadius:4,background:bestMonths.includes(i+1)?C.accent:C.bgAlt,border:`1px solid ${bestMonths.includes(i+1)?C.accentBd:C.border}`}}/>)}
+  </div>;
+}
+
+function FishCard({fish}){
+  const [open,setOpen]=useState(false);
+  return (
+    <div onClick={()=>setOpen(!open)} style={{background:open?C.accentBg:C.bgCard,border:`1.5px solid ${open?C.accent:C.border}`,borderRadius:12,padding:"16px 18px",cursor:"pointer",transition:"all 0.25s",marginBottom:10,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:"1.6rem"}}>{fish.icon}</span>
+          <div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",fontWeight:700,color:C.text}}>{fish.name}</div>
+            <div style={{fontSize:"0.75rem",color:C.textSoft,letterSpacing:"0.06em",textTransform:"uppercase",marginTop:2}}>{fish.season}</div>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{background:diffBg[fish.difficulty],color:diffColor[fish.difficulty],border:`1px solid ${diffColor[fish.difficulty]}55`,fontSize:"0.72rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",padding:"3px 8px",borderRadius:20}}>{fish.difficulty}</span>
+          <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s"}}>▾</span>
+        </div>
+      </div>
+      <MonthBar bestMonths={fish.bestMonths}/>
+      {open&&(
+        <div style={{marginTop:14,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div style={{background:C.bgAlt,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:"0.7rem",color:C.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4,fontWeight:700}}>Daily Limit</div>
+            <div style={{fontSize:"1rem",color:C.text,fontWeight:700}}>{fish.limit}</div>
+          </div>
+          <div style={{background:C.bgAlt,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:"0.7rem",color:C.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4,fontWeight:700}}>Min Size</div>
+            <div style={{fontSize:"1rem",color:C.text,fontWeight:700}}>{fish.minSize}</div>
+          </div>
+          <div style={{gridColumn:"1/-1",background:C.bgAlt,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:"0.7rem",color:C.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:6,fontWeight:700}}>Top Waters</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {fish.topLakes.map(l=><span key={l} style={{background:C.blueBg,border:`1px solid ${C.blueBd}`,borderRadius:20,padding:"2px 10px",fontSize:"0.8rem",color:C.blue,fontWeight:600}}>{l}</span>)}
+            </div>
+          </div>
+          <div style={{gridColumn:"1/-1",background:C.accentBg,border:`1.5px solid ${C.accentBd}`,borderRadius:8,padding:"10px 12px"}}>
+            <div style={{fontSize:"0.7rem",color:C.accent,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4,fontWeight:700}}>Pro Tip</div>
+            <div style={{fontSize:"0.9rem",color:C.text,lineHeight:1.7}}>{fish.tip}</div>
+          </div>
+          <div style={{gridColumn:"1/-1",fontSize:"0.75rem",color:C.textSoft,textAlign:"right"}}>Texas Record: <strong style={{color:C.accent}}>{fish.record}</strong></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RegionCard({region}){
+  return (
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderLeft:`4px solid ${region.color}`,borderRadius:12,padding:"16px 18px",marginBottom:10,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+      <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",fontWeight:700,color:C.text,marginBottom:6}}>{region.name}</div>
+      <p style={{fontSize:"0.9rem",color:C.textMid,lineHeight:1.7,margin:"0 0 12px"}}>{region.highlight}</p>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
+        {region.lakes.map(l=><span key={l} style={{background:C.blueBg,border:`1px solid ${C.blueBd}`,borderRadius:20,padding:"2px 10px",fontSize:"0.8rem",color:C.blue,fontWeight:600}}>🏞 {l}</span>)}
+      </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+        {region.species.map(sp=><span key={sp} style={{background:C.greenBg,border:`1px solid ${C.greenBd}`,borderRadius:20,padding:"2px 10px",fontSize:"0.8rem",color:C.green,fontWeight:600}}>🐟 {sp}</span>)}
+      </div>
+      <div style={{marginTop:10,fontSize:"0.78rem",color:C.textSoft}}>License Required: <strong style={{color:C.accent}}>{region.license}</strong></div>
+    </div>
+  );
+}
+
+function SpotlightCard({spot}){
+  const [open,setOpen]=useState(false);
+  const isSalt=spot.type==="Saltwater";
+  const ac=isSalt?C.teal:C.green,abg=isSalt?C.tealBg:C.greenBg,abd=isSalt?C.tealBd:C.greenBd;
+  return (
+    <div onClick={()=>setOpen(!open)} style={{background:open?abg:C.bgCard,border:`1.5px solid ${open?ac:C.border}`,borderLeft:`4px solid ${ac}`,borderRadius:12,padding:"16px 18px",cursor:"pointer",transition:"all 0.25s",marginBottom:10,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:"1.7rem"}}>{spot.icon}</span>
+          <div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",fontWeight:700,color:C.text}}>{spot.name}</div>
+            <div style={{display:"flex",gap:8,marginTop:4,flexWrap:"wrap"}}>
+              <span style={{fontSize:"0.75rem",color:ac,background:abg,border:`1px solid ${abd}`,borderRadius:20,padding:"1px 8px",fontWeight:600}}>{spot.type}</span>
+              <span style={{fontSize:"0.78rem",color:C.textSoft}}>📍 {spot.distance}</span>
+            </div>
+          </div>
+        </div>
+        <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s",flexShrink:0,marginTop:4}}>▾</span>
+      </div>
+      <p style={{fontSize:"0.88rem",color:C.textMid,lineHeight:1.65,margin:"10px 0 0"}}>{spot.highlight}</p>
+      {open&&(
+        <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{background:C.bgAlt,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:"0.7rem",color:ac,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:6,fontWeight:700}}>Target Species</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{spot.species.map(sp=><span key={sp} style={{background:abg,border:`1px solid ${abd}`,borderRadius:20,padding:"2px 10px",fontSize:"0.8rem",color:ac,fontWeight:600}}>{sp}</span>)}</div>
+          </div>
+          <div style={{background:C.bgAlt,borderRadius:8,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:"0.7rem",color:ac,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4,fontWeight:700}}>Best Seasons</div>
+            <div style={{fontSize:"0.88rem",color:C.textMid}}>{spot.seasons}</div>
+          </div>
+          <div style={{background:abg,border:`1.5px solid ${abd}`,borderRadius:8,padding:"10px 12px"}}>
+            <div style={{fontSize:"0.7rem",color:ac,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4,fontWeight:700}}>Local Intel</div>
+            <div style={{fontSize:"0.9rem",color:C.text,lineHeight:1.7}}>{spot.tip}</div>
+          </div>
+          <div style={{fontSize:"0.75rem",color:C.textSoft,textAlign:"right"}}>License: <strong style={{color:ac}}>{spot.license}</strong></div>
+        </div>
+      )}
+    </div>
+  );
+}
+function AIChatTab(){
+  const [messages,setMessages]=useState([]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [searchStatus,setSearchStatus]=useState("");
+  const bottomRef=useRef(null);
+  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[messages,loading]);
+  const STARTERS=["Best freshwater day trip from SA this weekend? Check levels.","What is the barometric pressure - good weekend to fish?","What lure color for murky bay water in fall?","How deep should I fish for bass in Texas summer?","How do I read an eddy on the Guadalupe River?","What clothing for clear flats fishing at Laguna Madre?","When should I use a Palomar vs Non-Slip Loop knot?","Should I fish before a storm or wait for it to clear?"];
+  async function send(text){
+    const msg=(text||input).trim();
+    if(!msg||loading)return;
+    setInput("");
+    const updated=[...messages,{role:"user",content:msg}];
+    setMessages(updated);
+    setLoading(true);
+    setSearchStatus("🔍 Checking lake levels, barometric pressure & conditions...");
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:AI_SYSTEM_PROMPT,tools:[{type:"web_search_20250305",name:"web_search"}],messages:updated})});
+      const data=await res.json();
+      const didSearch=data?.content?.some(b=>b.type==="tool_use"&&b.name==="web_search");
+      setSearchStatus(didSearch?"✅ Live conditions verified":"");
+      const reply=data?.content?.find(b=>b.type==="text")?.text||"Couldn't get a response - try again.";
+      setMessages([...updated,{role:"assistant",content:reply}]);
+    }catch{
+      setMessages([...updated,{role:"assistant",content:"Connection issue. Check your network and try again."}]);
+      setSearchStatus("");
+    }finally{
+      setLoading(false);
+      setTimeout(()=>setSearchStatus(""),5000);
+    }
+  }
+  return (
+    <div style={{display:"flex",flexDirection:"column"}}>
+      <div style={{background:C.accentBg,border:`1.5px solid ${C.accentBd}`,borderRadius:12,padding:"16px 18px",marginBottom:18,display:"flex",alignItems:"center",gap:14,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+        <div style={{width:56,height:56,borderRadius:"50%",background:"#fff",border:`2px solid ${C.accent}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.6rem",flexShrink:0}}>🤠</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",fontWeight:700,color:C.text}}>Ask Tex</div>
+          <div style={{fontSize:"0.82rem",color:C.textMid,marginTop:3,lineHeight:1.6}}>Your Texas fishing guide - fresh and saltwater, live conditions, color science, thermoclines, barometric pressure, structure, knots, and more.</div>
+          <div style={{display:"flex",gap:7,marginTop:8,flexWrap:"wrap"}}>
+            {["🔍 Live Levels","🌬️ Barometric","🎨 Color Science","🌡️ Thermocline","🪢 Knots","🏖️ Structure","🌊 Current","👕 Clothing"].map(b=>(
+              <span key={b} style={{fontSize:"0.7rem",color:C.textMid,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 7px"}}>{b}</span>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flexShrink:0}}>
+          <div style={{width:10,height:10,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}`}}/>
+          <span style={{fontSize:"0.65rem",color:C.green,letterSpacing:"0.05em",fontWeight:700}}>LIVE</span>
+        </div>
+      </div>
+      {messages.length===0&&(
+        <div style={{marginBottom:18}}>
+          <div style={{fontSize:"0.72rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10,fontWeight:700}}>Ask Tex anything:</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {STARTERS.map(s=>(
+              <button key={s} onClick={()=>send(s)} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:20,padding:"8px 14px",fontSize:"0.82rem",color:C.textMid,cursor:"pointer",lineHeight:1.4,transition:"all 0.18s",fontFamily:"inherit"}}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14,maxHeight:440,overflowY:"auto",paddingRight:4}}>
+        {messages.map((m,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",alignItems:"flex-start",gap:10}}>
+            {m.role==="assistant"&&<div style={{width:36,height:36,borderRadius:"50%",background:C.accentBg,border:`1.5px solid ${C.accent}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",flexShrink:0,marginTop:2}}>🤠</div>}
+            <div style={{maxWidth:"82%",background:m.role==="user"?C.blueBg:C.bgCard,border:`1px solid ${m.role==="user"?C.blueBd:C.border}`,borderRadius:m.role==="user"?"16px 4px 16px 16px":"4px 16px 16px 16px",padding:"11px 15px",fontSize:"0.9rem",color:C.text,lineHeight:1.75,whiteSpace:"pre-wrap",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>{m.content}</div>
+          </div>
+        ))}
+        {loading&&(
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {searchStatus&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:C.greenBg,border:`1px solid ${C.greenBd}`,borderRadius:20,alignSelf:"flex-start",marginLeft:46}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:C.green,animation:"pulse 1.5s ease-in-out infinite"}}/>
+              <span style={{fontSize:"0.78rem",color:C.green,fontWeight:600}}>{searchStatus}</span>
+            </div>}
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:C.accentBg,border:`1.5px solid ${C.accent}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",flexShrink:0}}>🤠</div>
+              <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:"4px 16px 16px 16px",padding:"14px 18px",display:"flex",gap:6,alignItems:"center"}}>
+                {[0,1,2].map(d=><div key={d} style={{width:8,height:8,borderRadius:"50%",background:C.accent,animation:`bob 1.2s ${d*0.2}s ease-in-out infinite`}}/>)}
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef}/>
+      </div>
+      <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+        <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask Tex - live lake levels, barometric pressure, color science, knots, structure..." rows={2} style={{flex:1,background:C.bgCard,border:`1.5px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:"0.9rem",resize:"none",fontFamily:"'Source Serif 4',Georgia,serif",outline:"none",lineHeight:1.5}}/>
+        <button onClick={()=>send()} disabled={!input.trim()||loading} style={{background:input.trim()&&!loading?C.accent:"#ccc",border:"none",borderRadius:10,padding:"13px 18px",color:"#fff",fontSize:"1.1rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s",flexShrink:0,fontWeight:700}}>➤</button>
+      </div>
+      {messages.length>0&&<button onClick={()=>{setMessages([]);setSearchStatus("");}} style={{background:"none",border:"none",color:C.textSoft,fontSize:"0.78rem",cursor:"pointer",marginTop:10,textAlign:"center",fontFamily:"inherit"}}>↺ Start new conversation</button>}
+    </div>
+  );
+}
+
+function TexasFishingGuide(){
+  const [tab,setTab]=useState("freshwater");
+  const tabs=[{id:"freshwater",label:"🎣 Freshwater"},{id:"saltwater",label:"🌊 Saltwater"},{id:"spotlight",label:"📍 SA & South TX"},{id:"regions",label:"🗺 Regions"},{id:"science",label:"📚 Field Science"},{id:"ai",label:"🤠 Ask Tex",ai:true}];
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Source Serif 4','Georgia',serif",color:C.text}}>
+      <div style={{position:"relative",overflow:"hidden",padding:"52px 24px 40px",textAlign:"center",borderBottom:`2px solid ${C.accentBd}`,background:"linear-gradient(160deg,#fef8f0 0%,#f0ebe2 100%)"}}>
+        <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(176,94,13,0.6) 40px,rgba(176,94,13,0.6) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(176,94,13,0.6) 40px,rgba(176,94,13,0.6) 41px)"}}/>
+        <div style={{fontSize:"0.75rem",letterSpacing:"0.35em",textTransform:"uppercase",color:C.accent,marginBottom:10,fontFamily:"'Oswald',sans-serif",fontWeight:600}}>★ Lone Star State ★</div>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(32px,8vw,56px)",fontWeight:900,lineHeight:1.05,color:C.text,margin:"0 0 8px",letterSpacing:"-0.02em"}}>Texas Fishing<br/><span style={{color:C.accent}}>Field Guide</span></h1>
+        <p style={{fontSize:"0.9rem",color:C.textMid,maxWidth:480,margin:"16px auto 0",lineHeight:1.8}}>Freshwater · Saltwater · Live Conditions · Color Science · Thermoclines · Barometric Pressure · Knots · Structure · AI Guide</p>
+      </div>
+      <div style={{display:"flex",gap:3,padding:"14px 12px 0",overflowX:"auto",borderBottom:`2px solid ${C.border}`,background:C.bgAlt}}>
+        {tabs.map(t=>{const active=tab===t.id;return(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{background:active?C.bgCard:"transparent",border:active?`1.5px solid ${C.accent}`:"1.5px solid transparent",borderBottom:active?`2px solid ${C.accent}`:"2px solid transparent",color:active?C.accent:C.textSoft,padding:"10px 16px",borderRadius:"8px 8px 0 0",cursor:"pointer",fontSize:"0.82rem",fontFamily:"'Oswald',sans-serif",letterSpacing:"0.05em",whiteSpace:"nowrap",transition:"all 0.2s",fontWeight:active?700:400}}>
+            {t.label}{t.ai&&<span style={{marginLeft:5,fontSize:"0.6rem",background:C.accent,color:"#fff",borderRadius:4,padding:"1px 5px",verticalAlign:"middle",fontWeight:700}}>AI</span>}
+          </button>
+        );})}
+      </div>
+      <div style={{padding:"22px 18px 56px",maxWidth:720,margin:"0 auto"}}>
+        {tab==="freshwater"&&<>
+          <div style={{fontSize:"0.72rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16,fontWeight:700}}>Top Freshwater Species - Click to Expand</div>
+          {fishData.freshwater.map(f=><FishCard key={f.name} fish={f}/>)}
+          <div style={{marginTop:20,padding:"14px 18px",background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:10}}>
+            <div style={{fontSize:"0.7rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>Peak Season Legend</div>
+            <div style={{display:"flex",gap:2,marginBottom:6}}>{months.map(m=><div key={m} style={{flex:1,textAlign:"center",fontSize:"0.6rem",color:C.textSoft}}>{m[0]}</div>)}</div>
+            <div style={{display:"flex",gap:2}}>{months.map((m,i)=><div key={m} style={{flex:1,height:9,borderRadius:3,background:i<6?C.accent:C.bgAlt,border:`1px solid ${i<6?C.accentBd:C.border}`}}/>)}</div>
+          </div>
+        </>}
+        {tab==="saltwater"&&<>
+          <div style={{fontSize:"0.72rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16,fontWeight:700}}>Top Saltwater / Coastal Species - Click to Expand</div>
+          {fishData.saltwater.map(f=><FishCard key={f.name} fish={f}/>)}
+        </>}
+        {tab==="spotlight"&&<>
+          <div style={{background:C.greenBg,border:`1.5px solid ${C.greenBd}`,borderRadius:12,padding:"14px 16px",marginBottom:18}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",fontWeight:700,color:C.text,marginBottom:6}}>📍 San Antonio & South Texas Home Waters</div>
+            <p style={{fontSize:"0.9rem",color:C.textMid,margin:"0 0 8px",lineHeight:1.7}}>Best fishing within striking distance of San Antonio - from Hill Country lakes 30 minutes away to Gulf Coast bays a few hours south.</p>
+            <div style={{fontSize:"0.85rem",color:C.green,fontWeight:600}}>⚡ Use the Ask Tex tab - he will verify current lake levels and barometric pressure before recommending.</div>
+          </div>
+          {fishData.spotlight.map(s=><SpotlightCard key={s.name} spot={s}/>)}
+        </>}
+        {tab==="regions"&&<>
+          <div style={{fontSize:"0.72rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16,fontWeight:700}}>Fishing Regions of Texas</div>
+          {fishData.regions.map(r=><RegionCard key={r.name} region={r}/>)}
+        </>}
+        {tab==="science"&&<>
+          <div style={{background:C.accentBg,border:`1.5px solid ${C.accentBd}`,borderRadius:12,padding:"14px 16px",marginBottom:18}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",fontWeight:700,color:C.text,marginBottom:6}}>📚 Field Science & Pro Knowledge</div>
+            <p style={{fontSize:"0.9rem",color:C.textMid,margin:0,lineHeight:1.7}}>The science that separates consistent anglers from lucky ones. Click any section to expand. All of this knowledge is also built into Tex.</p>
+          </div>
+          {scienceSections.map(s=><ScienceCard key={s.id} s={s}/>)}
+        </>}
+        {tab==="ai"&&<>
+          <div style={{fontSize:"0.72rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:16,fontWeight:700}}>AI Fishing Guide - Live Conditions · Full Science Knowledge · Fresh & Salt</div>
+          <AIChatTab/>
+        </>}
+        <div style={{textAlign:"center",marginTop:36,fontSize:"0.82rem",color:C.textSoft,padding:"16px",background:C.bgCard,borderRadius:10,border:`1px solid ${C.border}`}}>
+          Always verify current regulations at <a href="https://tpwd.texas.gov" target="_blank" rel="noopener" style={{color:C.accent,fontWeight:600}}>tpwd.texas.gov</a> before fishing.<br/>Tight lines, Texas. 🤠
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<TexasFishingGuide/>);
+</script>
+</body>
+</html>
