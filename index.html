@@ -314,7 +314,7 @@ function KnotDiagrams(){
               </div>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
                 <span style={{fontSize:"0.72rem",color:C.textSoft,background:C.bgAlt,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 8px"}}>{k.strength}</span>
-                <span style={{color:C.textSoft,transform:openKnot===i?"rotate(180deg)":"none",transition:"transform 0.25s",display:"inline-block"}}>â–¾</span>
+                <span style={{color:C.textSoft,transform:openKnot===i?"rotate(180deg)":"none",transition:"transform 0.25s",display:"inline-block"}}>▾</span>
               </div>
             </div>
             {openKnot===i&&(
@@ -347,7 +347,7 @@ function ScienceCard({s}){
           <span style={{fontSize:"1.4rem"}}>{s.icon}</span>
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1rem",fontWeight:700,color:C.text}}>{s.title}</div>
         </div>
-        <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s"}}>â–¾</span>
+        <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s"}}>▾</span>
       </div>
       {open&&(
         <div style={{padding:"0 16px 16px",borderTop:`1px solid ${C.border}`}}>
@@ -449,7 +449,7 @@ function FishCard({fish}){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{background:diffBg[fish.difficulty],color:diffColor[fish.difficulty],border:`1px solid ${diffColor[fish.difficulty]}55`,fontSize:"0.72rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",padding:"3px 8px",borderRadius:20}}>{fish.difficulty}</span>
-          <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s"}}>â–¾</span>
+          <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s"}}>▾</span>
         </div>
       </div>
       <MonthBar bestMonths={fish.bestMonths}/>
@@ -513,7 +513,7 @@ function SpotlightCard({spot}){
             </div>
           </div>
         </div>
-        <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s",flexShrink:0,marginTop:4}}>â–¾</span>
+        <span style={{color:C.textSoft,display:"inline-block",transform:open?"rotate(180deg)":"none",transition:"transform 0.25s",flexShrink:0,marginTop:4}}>▾</span>
       </div>
       <p style={{fontSize:"0.88rem",color:C.textMid,lineHeight:1.65,margin:"10px 0 0"}}>{spot.highlight}</p>
       {open&&(
@@ -659,7 +659,7 @@ function AIChatTab(){
         <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask Tex - live lake levels, barometric pressure, color science, knots, structure..." rows={2} style={{flex:1,background:C.bgCard,border:`1.5px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:"0.9rem",resize:"none",fontFamily:"'Source Serif 4',Georgia,serif",outline:"none",lineHeight:1.5}}/>
         <button onClick={()=>send()} disabled={!input.trim()||loading} style={{background:input.trim()&&!loading?C.accent:"#ccc",border:"none",borderRadius:10,padding:"13px 18px",color:"#fff",fontSize:"1.1rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s",flexShrink:0,fontWeight:700}}>➤</button>
       </div>
-      {messages.length>0&&<button onClick={()=>{setMessages([]);setSearchStatus("");}} style={{background:"none",border:"none",color:C.textSoft,fontSize:"0.78rem",cursor:"pointer",marginTop:10,textAlign:"center",fontFamily:"inherit"}}>â†º Start new conversation</button>}
+      {messages.length>0&&<button onClick={()=>{setMessages([]);setSearchStatus("");}} style={{background:"none",border:"none",color:C.textSoft,fontSize:"0.78rem",cursor:"pointer",marginTop:10,textAlign:"center",fontFamily:"inherit"}}>↺ Start new conversation</button>}
     </div>
   );
 }
