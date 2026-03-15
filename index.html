@@ -66,8 +66,8 @@ const fishData={
     {name:"South Texas / Lower Laguna",color:C.teal,lakes:["Lower Laguna Madre","Port Mansfield","South Padre"],species:["Snook","Tarpon","Redfish"],highlight:"Clearest water in Texas - sight-casting to tailing redfish and exotic snook in subtropical flats.",license:"Texas Saltwater"},
   ],
   spotlight:[
-    {name:"Canyon Lake",icon:"⛰ï¸",type:"Freshwater",distance:"~50 mi",species:["Largemouth Bass","Guadalupe Bass","Catfish","Crappie"],seasons:"Bass: Spring & Fall - Catfish: Summer nights",tip:"Guadalupe River below the dam holds Guadalupe bass and winter-stocked rainbow trout. Rocky ledges and current seams - small spinners or soft plastics.",license:"Freshwater",highlight:"~50 miles from SA - Hill Country scenery, clear water, multiple species."},
-    {name:"Choke Canyon Reservoir",icon:"🏜ï¸",type:"Freshwater",distance:"~70 mi",species:["Largemouth Bass","Blue Catfish","Flathead Catfish","White Bass"],seasons:"Catfish: Summer (peak) - Bass: Spring spawn",tip:"One of the best catfish lakes in South Texas. Deeper creek channels with cut shad. Bass spawn in flooded timber near Calliham Unit.",license:"Freshwater",highlight:"Massive blue cats only 70 miles south - check current levels before going."},
+    {name:"Canyon Lake",icon:"⛰️",type:"Freshwater",distance:"~50 mi",species:["Largemouth Bass","Guadalupe Bass","Catfish","Crappie"],seasons:"Bass: Spring & Fall - Catfish: Summer nights",tip:"Guadalupe River below the dam holds Guadalupe bass and winter-stocked rainbow trout. Rocky ledges and current seams - small spinners or soft plastics.",license:"Freshwater",highlight:"~50 miles from SA - Hill Country scenery, clear water, multiple species."},
+    {name:"Choke Canyon Reservoir",icon:"🏜️",type:"Freshwater",distance:"~70 mi",species:["Largemouth Bass","Blue Catfish","Flathead Catfish","White Bass"],seasons:"Catfish: Summer (peak) - Bass: Spring spawn",tip:"One of the best catfish lakes in South Texas. Deeper creek channels with cut shad. Bass spawn in flooded timber near Calliham Unit.",license:"Freshwater",highlight:"Massive blue cats only 70 miles south - check current levels before going."},
     {name:"Medina Lake",icon:"🌊",type:"Freshwater",distance:"~30 mi",species:["Largemouth Bass","Catfish","Crappie","Sunfish"],seasons:"Bass: Spring - Crappie: Spring & Fall",tip:"Closest quality freshwater lake to SA. When levels are up, work brush and coves near the dam.",license:"Freshwater",highlight:"Your closest lake - just 30 miles west. Verify levels before going."},
     {name:"Lower Laguna Madre",icon:"🦅",type:"Saltwater",distance:"~3.5 hrs",species:["Redfish","Speckled Trout","Snook","Black Drum"],seasons:"Redfish & Trout: Year-round - Snook: Summer",tip:"Crown jewel of Texas wade fishing. Clear shallow flats for sight-casting to tailing redfish. Gold spoons and natural soft plastics.",license:"Saltwater",highlight:"World-class sight fishing 3.5 hrs from San Antonio."},
     {name:"Corpus Christi / Aransas Bay",icon:"⚓",type:"Saltwater",distance:"~2.5 hrs",species:["Speckled Trout","Redfish","Flounder","Drum"],seasons:"Trout & Reds: Fall peak - Flounder: Sept-Nov",tip:"Closest Gulf Coast bay to SA. Rockport wade access and guide services. Fall flounder run at Aransas Pass jetties is legendary.",license:"Saltwater",highlight:"Your nearest saltwater fishery - only 2.5 hours away."},
@@ -119,7 +119,7 @@ const scienceSections=[
     ],
     rule:"Clear water = natural/subtle. Murky = high-contrast (chartreuse, black, white). Deep = blue/purple/UV. Low light = dark silhouette or chartreuse."
   },
-  {id:"thermocline",icon:"🌡ï¸",title:"Thermocline & Water Stratification",accent:C.red,accentBg:C.redBg,accentBd:C.redBd,
+  {id:"thermocline",icon:"🌡️",title:"Thermocline & Water Stratification",accent:C.red,accentBg:C.redBg,accentBd:C.redBd,
     intro:"A thermocline is the invisible boundary between warm oxygenated surface water and cold oxygen-depleted deep water. In Texas summers it controls where every fish in the lake is located.",
     items:[
       {label:"What It Is",note:"A layer of rapid temperature change. Below it, oxygen levels drop too low for fish to survive long-term. Fish are physically excluded from below-thermocline water."},
@@ -132,7 +132,7 @@ const scienceSections=[
     ],
     rule:"Summer shortcut: if typical spots are empty, the thermocline has pushed fish up - work 12-20 ft horizontally. Moving water (rivers) does not stratify, so the Guadalupe is thermocline-free year-round."
   },
-  {id:"baro",icon:"🌬ï¸",title:"Barometric Pressure & Fish Behavior",accent:C.blue,accentBg:C.blueBg,accentBd:C.blueBd,
+  {id:"baro",icon:"🌬️",title:"Barometric Pressure & Fish Behavior",accent:C.blue,accentBg:C.blueBg,accentBd:C.blueBd,
     intro:"Fish have a swim bladder - a gas-filled organ that acts like a built-in barometer. Atmospheric pressure changes directly affect where fish position and how aggressively they feed.",
     items:[
       {label:"Rapidly Falling - Storm Approaching",note:"BEST BITE of all. Fish feed aggressively 2-6 hours before a front arrives. Drop everything and go fishing now.",dot:"#2a7a3b"},
@@ -164,7 +164,7 @@ const scienceSections=[
   {id:"knots",icon:"🪢",title:"Essential Fishing Knots",accent:C.accent,accentBg:C.accentBg,accentBd:C.accentBd,
     intro:"A failed knot is the most preventable way to lose a big fish. Master these four. Always wet the line before cinching - dry friction weakens mono and fluorocarbon by up to 30%.",
   },
-  {id:"shoreline",icon:"🏖ï¸",title:"Reading Shoreline & Structure Features",accent:C.green,accentBg:C.greenBg,accentBd:C.greenBd,
+  {id:"shoreline",icon:"🏖️",title:"Reading Shoreline & Structure Features",accent:C.green,accentBg:C.greenBg,accentBd:C.greenBd,
     intro:"The shoreline and underwater structure are your map to where fish hold. Learn to read these features and spend less time guessing and more time catching.",
     items:[
       {label:"Points (land jutting into water)",note:"Fish stack at the tip, especially downwind. Baitfish travel the edge. Always fish points first - most reliable structure on any lake."},
@@ -541,6 +541,8 @@ function AIChatTab(){
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const [searchStatus,setSearchStatus]=useState("");
+  const [showKeyInput,setShowKeyInput]=useState(false);
+  const [keyInput,setKeyInput]=useState("");
   const bottomRef=useRef(null);
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[messages,loading]);
   const STARTERS=["Best freshwater day trip from SA this weekend? Check levels.","What is the barometric pressure - good weekend to fish?","What lure color for murky bay water in fall?","How deep should I fish for bass in Texas summer?","How do I read an eddy on the Guadalupe River?","What clothing for clear flats fishing at Laguna Madre?","When should I use a Palomar vs Non-Slip Loop knot?","Should I fish before a storm or wait for it to clear?"];
@@ -552,8 +554,13 @@ function AIChatTab(){
     setMessages(updated);
     setLoading(true);
     setSearchStatus("🔍 Checking lake levels, barometric pressure & conditions...");
+    const _apiKey = sessionStorage.getItem("tex_api_key");
+    if(!_apiKey){
+      setMessages([...updated,{role:"assistant",content:"⚠️ API key required to use Ask Tex on this standalone version.\n\nGet a free API key at console.anthropic.com, then click the 🔑 button above to enter it. It is stored only in your browser session."}]);
+      setLoading(false); setSearchStatus(""); return;
+    }
     try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:AI_SYSTEM_PROMPT,tools:[{type:"web_search_20250305",name:"web_search"}],messages:updated})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},headers:{"Content-Type":"application/json","x-api-key":sessionStorage.getItem("tex_api_key")||"","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:AI_SYSTEM_PROMPT,tools:[{type:"web_search_20250305",name:"web_search"}],messages:updated})});
       const data=await res.json();
       const didSearch=data?.content?.some(b=>b.type==="tool_use"&&b.name==="web_search");
       setSearchStatus(didSearch?"✅ Live conditions verified":"");
@@ -575,7 +582,7 @@ function AIChatTab(){
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",fontWeight:700,color:C.text}}>Ask Tex</div>
           <div style={{fontSize:"0.82rem",color:C.textMid,marginTop:3,lineHeight:1.6}}>Your Texas fishing guide - fresh and saltwater, live conditions, color science, thermoclines, barometric pressure, structure, knots, and more.</div>
           <div style={{display:"flex",gap:7,marginTop:8,flexWrap:"wrap"}}>
-            {["🔍 Live Levels","🌬ï¸ Barometric","🎨 Color Science","🌡ï¸ Thermocline","🪢 Knots","🏖ï¸ Structure","🌊 Current","👕 Clothing"].map(b=>(
+            {["🔍 Live Levels","🌬️ Barometric","🎨 Color Science","🌡️ Thermocline","🪢 Knots","🏖️ Structure","🌊 Current","👕 Clothing"].map(b=>(
               <span key={b} style={{fontSize:"0.7rem",color:C.textMid,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 7px"}}>{b}</span>
             ))}
           </div>
@@ -585,6 +592,34 @@ function AIChatTab(){
           <span style={{fontSize:"0.65rem",color:C.green,letterSpacing:"0.05em",fontWeight:700}}>LIVE</span>
         </div>
       </div>
+
+    {showKeyInput && (
+      <div style={{background:"#fef3e2",border:"1.5px solid #f5c97a",borderRadius:10,padding:"12px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+        <input value={keyInput} onChange={e=>setKeyInput(e.target.value)}
+          placeholder="Paste your Anthropic API key (sk-ant-...)"
+          type="password"
+          style={{flex:1,minWidth:200,border:"1px solid #ddd5c8",borderRadius:8,padding:"8px 12px",fontSize:"0.82rem",fontFamily:"monospace",outline:"none",background:"#fff"}}
+        />
+        <button onClick={()=>{if(keyInput.trim()){sessionStorage.setItem("tex_api_key",keyInput.trim());setShowKeyInput(false);setKeyInput("");}}}
+          style={{background:"#b05e0d",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",cursor:"pointer",fontSize:"0.85rem",fontWeight:700}}>Save</button>
+        <button onClick={()=>{sessionStorage.removeItem("tex_api_key");setShowKeyInput(false);setKeyInput("");}}
+          style={{background:"#fceae7",color:"#b5230a",border:"1px solid #f0a898",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontSize:"0.85rem"}}>Clear</button>
+      </div>
+    )}
+    {!showKeyInput && !sessionStorage.getItem("tex_api_key") && (
+      <div style={{background:"#fceae7",border:"1px solid #f0a898",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+        <div style={{flex:1,fontSize:"0.85rem",color:"#b5230a"}}>
+          <strong>🔑 API key required</strong> — to use Ask Tex on this standalone site, add a free Anthropic API key.<br/>
+          <span style={{fontSize:"0.78rem",color:"#5a4e40"}}>Get one at <a href="https://console.anthropic.com" target="_blank" rel="noopener" style={{color:"#b05e0d"}}>console.anthropic.com</a> → API Keys → Create Key. Stored only in your browser session.</span>
+        </div>
+        <button onClick={()=>setShowKeyInput(true)} style={{background:"#b05e0d",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:"0.85rem",fontWeight:700,whiteSpace:"nowrap"}}>Add API Key</button>
+      </div>
+    )}
+    {!showKeyInput && sessionStorage.getItem("tex_api_key") && (
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:6}}>
+        <button onClick={()=>setShowKeyInput(true)} style={{background:"none",border:"none",color:"#8a7b6a",fontSize:"0.75rem",cursor:"pointer"}}>🔑 API key active (change)</button>
+      </div>
+    )}
       {messages.length===0&&(
         <div style={{marginBottom:18}}>
           <div style={{fontSize:"0.72rem",color:C.textSoft,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10,fontWeight:700}}>Ask Tex anything:</div>
@@ -622,7 +657,7 @@ function AIChatTab(){
       </div>
       <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
         <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask Tex - live lake levels, barometric pressure, color science, knots, structure..." rows={2} style={{flex:1,background:C.bgCard,border:`1.5px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:"0.9rem",resize:"none",fontFamily:"'Source Serif 4',Georgia,serif",outline:"none",lineHeight:1.5}}/>
-        <button onClick={()=>send()} disabled={!input.trim()||loading} style={{background:input.trim()&&!loading?C.accent:"#ccc",border:"none",borderRadius:10,padding:"13px 18px",color:"#fff",fontSize:"1.1rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s",flexShrink:0,fontWeight:700}}>âž¤</button>
+        <button onClick={()=>send()} disabled={!input.trim()||loading} style={{background:input.trim()&&!loading?C.accent:"#ccc",border:"none",borderRadius:10,padding:"13px 18px",color:"#fff",fontSize:"1.1rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s",flexShrink:0,fontWeight:700}}>➤</button>
       </div>
       {messages.length>0&&<button onClick={()=>{setMessages([]);setSearchStatus("");}} style={{background:"none",border:"none",color:C.textSoft,fontSize:"0.78rem",cursor:"pointer",marginTop:10,textAlign:"center",fontFamily:"inherit"}}>â†º Start new conversation</button>}
     </div>
