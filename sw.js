@@ -1,4 +1,4 @@
-const CACHE = 'tx-fishing-v1';
+const CACHE = 'tx-fishing-v5';
 const ASSETS = [
   '/texas-fishing-guide/',
   '/texas-fishing-guide/index.html',
